@@ -1,5 +1,7 @@
 package com.wipro.wega.fraud_transaction_adapter.producer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,7 @@ import com.wipro.wega.fraud_transaction_adapter.model.CreditReply;
 @Component
 public class CreditReplyProducerImpl implements CreditReplyProducer {
 
+    private static final Logger log = LoggerFactory.getLogger(CreditReplyProducerImpl.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final String outboundTopic;
 
@@ -26,6 +29,11 @@ public class CreditReplyProducerImpl implements CreditReplyProducer {
     @Override
     @Loggable
     public void publish(CreditReply reply) {
-        kafkaTemplate.send(outboundTopic, reply.transactionId(), reply);
+        kafkaTemplate.send(outboundTopic, reply.transactionId(), reply)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish reply for transactionId={}", reply.transactionId(), ex);
+                    }
+                });
     }
 }
