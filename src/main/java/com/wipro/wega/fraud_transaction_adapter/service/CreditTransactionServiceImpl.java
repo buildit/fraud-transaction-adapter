@@ -78,13 +78,18 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
     }
 
     private void withContext(Map<String, String> context, Runnable action) {
+        Map<String, String> previous = MDC.getCopyOfContextMap();
         if (context != null) {
             MDC.setContextMap(context);
         }
         try {
             action.run();
         } finally {
-            MDC.clear();
+            if (previous != null) {
+                MDC.setContextMap(previous);
+            } else {
+                MDC.clear();
+            }
         }
     }
 }
