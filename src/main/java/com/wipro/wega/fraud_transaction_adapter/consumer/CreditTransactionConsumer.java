@@ -28,11 +28,16 @@ public class CreditTransactionConsumer {
     @KafkaListener(topics = "${adapter.kafka.inbound-topic}")
     @Loggable
     public void onMessage(String record) {
+        java.util.Map<String, String> previousContext = MDC.getCopyOfContextMap();
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
         try {
             creditTransactionService.process(record);
         } finally {
-            MDC.clear();
+            if (previousContext != null) {
+                MDC.setContextMap(previousContext);
+            } else {
+                MDC.clear();
+            }
         }
     }
 }
