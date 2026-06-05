@@ -30,6 +30,9 @@ public class CreditTransactionConsumer {
     public void onMessage(String record) {
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
         try {
+            // Note: To prevent data loss, the service interface should be refactored 
+            // to return a CompletableFuture<?> so Spring Kafka can wait for completion 
+            // before committing the offset.
             creditTransactionService.process(record);
         } finally {
             MDC.clear();
