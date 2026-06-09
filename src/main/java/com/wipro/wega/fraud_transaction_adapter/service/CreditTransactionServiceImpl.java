@@ -46,12 +46,16 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
         // under the same correlation/transaction ids as the listener thread.
         Map<String, String> journeyContext = MDC.getCopyOfContextMap();
 
-        creditScoreClient.requestScore(transaction)
-                .thenAccept(response -> publishReply(transaction, response, journeyContext))
-                .exceptionally(ex -> {
-                    handleFailure(transaction, ex, journeyContext);
-                    return null;
-                });
+        try {
+            creditScoreClient.requestScore(transaction)
+                    .thenAccept(response -> publishReply(transaction, response, journeyContext))
+                    .exceptionally(ex -> {
+                        handleFailure(transaction, ex, journeyContext);
+                        return null;
+                    });
+        } catch (Exception ex) {
+            handleFailure(transaction, ex, journeyContext);
+        }
     }
 
     private void publishReply(CreditTransaction transaction,
