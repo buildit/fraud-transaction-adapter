@@ -31,6 +31,9 @@ public class CreditTransactionConsumer {
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
         try {
             creditTransactionService.process(record);
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(CreditTransactionConsumer.class)
+                    .error("Failed to process transaction record", e);
         } finally {
             MDC.clear();
         }

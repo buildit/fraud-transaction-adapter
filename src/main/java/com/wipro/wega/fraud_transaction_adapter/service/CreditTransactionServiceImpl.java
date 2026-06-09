@@ -46,12 +46,16 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
         // under the same correlation/transaction ids as the listener thread.
         Map<String, String> journeyContext = MDC.getCopyOfContextMap();
 
-        creditScoreClient.requestScore(transaction)
-                .thenAccept(response -> publishReply(transaction, response, journeyContext))
-                .exceptionally(ex -> {
-                    handleFailure(transaction, ex, journeyContext);
-                    return null;
-                });
+        try {
+            creditScoreClient.requestScore(transaction)
+                    .thenAccept(response -> publishReply(transaction, response, journeyContext))
+                    .exceptionally(ex -> {
+                        handleFailure(transaction, ex, journeyContext);
+                        return null;
+                    });
+        } catch (Exception ex) {
+            handleFailure(transaction, ex, journeyContext);
+        }
     }
 
     private void publishReply(CreditTransaction transaction,
@@ -71,20 +75,29 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
 
     private void handleFailure(CreditTransaction transaction, Throwable ex,
                                Map<String, String> journeyContext) {
-        withContext(journeyContext, () ->
-                org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
-                        .error("Credit scoring failed for transactionId={}",
-                                transaction.transactionId(), ex));
+        withContext(journeyContext, () -> {
+            org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
+                    .error("Credit scoring failed for transactionId={}",
+                            transaction.transactionId(), ex);
+            // TODO: Implement retry, DLT routing, or failure reply publishing here
+        });
     }
 
     private void withContext(Map<String, String> context, Runnable action) {
+        Map<String, String> previous = MDC.getCopyOfContextMap();
         if (context != null) {
             MDC.setContextMap(context);
+        } else {
+            MDC.clear();
         }
         try {
             action.run();
         } finally {
-            MDC.clear();
+            if (previous != null) {
+                MDC.setContextMap(previous);
+            } else {
+                MDC.clear();
+            }
         }
     }
 }

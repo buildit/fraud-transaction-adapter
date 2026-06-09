@@ -17,5 +17,5 @@ adapter:
     inbound-topic: MQ-CREDIT-TXNS
     outbound-topic: MQ-CREDIT-REPLIES
   credit-score:
-    base-url: ${CREDIT_SCORE_BASE_URL:http://localhost:9095}
+    base-url: ${CREDIT_SCORE_BASE_URL:https://localhost:9095}
     score-path: /credit/score
