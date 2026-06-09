@@ -75,10 +75,12 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
 
     private void handleFailure(CreditTransaction transaction, Throwable ex,
                                Map<String, String> journeyContext) {
-        withContext(journeyContext, () ->
-                org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
-                        .error("Credit scoring failed for transactionId={}",
-                                transaction.transactionId(), ex));
+        withContext(journeyContext, () -> {
+            org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
+                    .error("Credit scoring failed for transactionId={}",
+                            transaction.transactionId(), ex);
+            // TODO: Implement retry, DLT routing, or failure reply publishing here
+        });
     }
 
     private void withContext(Map<String, String> context, Runnable action) {
