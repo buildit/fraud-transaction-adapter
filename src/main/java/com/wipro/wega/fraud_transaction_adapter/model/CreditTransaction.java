@@ -19,4 +19,22 @@ public record CreditTransaction(
         LocalDate transactionDate,
         LocalTime transactionTime,
         String countryCode) {
+
+    @Override
+    public String toString() {
+        String maskedCard = cardNumber != null && cardNumber.length() >= 4
+                ? "****" + cardNumber.substring(cardNumber.length() - 4)
+                : "****";
+        return "CreditTransaction[" +
+                "transactionId=" + transactionId + ", " +
+                "accountNumber=" + accountNumber + ", " +
+                "cardNumber=" + maskedCard + ", " +
+                "amount=" + amount + ", " +
+                "currencyCode=" + currencyCode + ", " +
+                "merchantId=" + merchantId + ", " +
+                "merchantName=" + merchantName + ", " +
+                "transactionDate=" + transactionDate + ", " +
+                "transactionTime=" + transactionTime + ", " +
+                "countryCode=" + countryCode + ']';
+    }
 }
