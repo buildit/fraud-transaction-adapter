@@ -6,7 +6,6 @@ import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.wipro.wega.fraud_transaction_adapter.logging.Loggable;
 import com.wipro.wega.fraud_transaction_adapter.service.CreditTransactionService;
 
 /**
@@ -26,7 +25,6 @@ public class CreditTransactionConsumer {
     }
 
     @KafkaListener(topics = "${adapter.kafka.inbound-topic}")
-    @Loggable
     public void onMessage(String record) {
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
         try {
