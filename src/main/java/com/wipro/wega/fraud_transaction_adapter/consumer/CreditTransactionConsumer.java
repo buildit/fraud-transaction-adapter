@@ -28,11 +28,18 @@ public class CreditTransactionConsumer {
     @KafkaListener(topics = "${adapter.kafka.inbound-topic}")
     @Loggable
     public void onMessage(String record) {
+        String previousCorrelationId = MDC.get(MDC_CORRELATION_ID);
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
         try {
+            // WARNING: Asynchronous processing without manual acknowledgment leads to message loss on failure.
+            // Consider changing the service to process synchronously or use manual Kafka Acknowledgment.
             creditTransactionService.process(record);
         } finally {
-            MDC.clear();
+            if (previousCorrelationId != null) {
+                MDC.put(MDC_CORRELATION_ID, previousCorrelationId);
+            } else {
+                MDC.remove(MDC_CORRELATION_ID);
+            }
         }
     }
 }
