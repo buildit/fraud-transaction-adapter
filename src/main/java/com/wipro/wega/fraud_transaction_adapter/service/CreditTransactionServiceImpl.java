@@ -40,18 +40,27 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
     @Loggable
     public void process(String rawRecord) {
         CreditTransaction transaction = transformer.transform(rawRecord);
+        String previousTxId = MDC.get(MDC_TRANSACTION_ID);
         MDC.put(MDC_TRANSACTION_ID, transaction.transactionId());
 
-        // Capture the journey context so the async completion callback logs
-        // under the same correlation/transaction ids as the listener thread.
-        Map<String, String> journeyContext = MDC.getCopyOfContextMap();
+        try {
+            // Capture the journey context so the async completion callback logs
+            // under the same correlation/transaction ids as the listener thread.
+            Map<String, String> journeyContext = MDC.getCopyOfContextMap();
 
-        creditScoreClient.requestScore(transaction)
-                .thenAccept(response -> publishReply(transaction, response, journeyContext))
-                .exceptionally(ex -> {
-                    handleFailure(transaction, ex, journeyContext);
-                    return null;
-                });
+            creditScoreClient.requestScore(transaction)
+                    .thenAccept(response -> publishReply(transaction, response, journeyContext))
+                    .exceptionally(ex -> {
+                        handleFailure(transaction, ex, journeyContext);
+                        return null;
+                    });
+        } finally {
+            if (previousTxId != null) {
+                MDC.put(MDC_TRANSACTION_ID, previousTxId);
+            } else {
+                MDC.remove(MDC_TRANSACTION_ID);
+            }
+        }
     }
 
     private void publishReply(CreditTransaction transaction,
