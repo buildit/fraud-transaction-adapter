@@ -28,11 +28,16 @@ public class CreditTransactionConsumer {
     @KafkaListener(topics = "${adapter.kafka.inbound-topic}")
     @Loggable
     public void onMessage(String record) {
+        String previousCorrelationId = MDC.get(MDC_CORRELATION_ID);
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
         try {
             creditTransactionService.process(record);
         } finally {
-            MDC.clear();
+            if (previousCorrelationId != null) {
+                MDC.put(MDC_CORRELATION_ID, previousCorrelationId);
+            } else {
+                MDC.remove(MDC_CORRELATION_ID);
+            }
         }
     }
 }
