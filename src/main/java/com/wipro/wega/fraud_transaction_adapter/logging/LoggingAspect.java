@@ -31,8 +31,24 @@ public class LoggingAspect {
         MDC.put(MDC_METHOD, methodName);
         long startNanos = System.nanoTime();
         logger.info("ENTRY {}", methodName);
+        boolean isAsync = false;
         try {
             Object result = joinPoint.proceed();
+            if (result instanceof java.util.concurrent.CompletableFuture<?> future) {
+                isAsync = true;
+                return future.whenComplete((res, ex) -> {
+                    MDC.put(MDC_METHOD, methodName);
+                    try {
+                        if (ex != null) {
+                            logger.error("EXIT {} failed after {} ms: {}", methodName, elapsedMillis(startNanos), ex.getMessage());
+                        } else {
+                            logger.info("EXIT {} ({} ms)", methodName, elapsedMillis(startNanos));
+                        }
+                    } finally {
+                        restore(previousMethod);
+                    }
+                });
+            }
             logger.info("EXIT {} ({} ms)", methodName, elapsedMillis(startNanos));
             return result;
         } catch (Throwable ex) {
@@ -40,7 +56,9 @@ public class LoggingAspect {
                     ex.getMessage());
             throw ex;
         } finally {
-            restore(previousMethod);
+            if (!isAsync) {
+                restore(previousMethod);
+            }
         }
     }
 
