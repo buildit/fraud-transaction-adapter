@@ -27,15 +27,9 @@ public class CreditTransactionConsumer {
 
     @KafkaListener(topics = "${adapter.kafka.inbound-topic}")
     @Loggable
-    public void onMessage(String record) {
+    public java.util.concurrent.CompletableFuture<Void> onMessage(String record) {
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
-        try {
-            // Note: To prevent data loss, the service interface should be refactored 
-            // to return a CompletableFuture<?> so Spring Kafka can wait for completion 
-            // before committing the offset.
-            creditTransactionService.process(record);
-        } finally {
-            MDC.clear();
-        }
+        // Note: CreditTransactionService.process must be updated to return CompletableFuture<Void>
+        return creditTransactionService.process(record).whenComplete((res, ex) -> MDC.clear());
     }
 }
