@@ -28,8 +28,8 @@ public class CreditReplyProducerImpl implements CreditReplyProducer {
 
     @Override
     @Loggable
-    public void publish(CreditReply reply) {
-        kafkaTemplate.send(outboundTopic, reply.transactionId(), reply)
+    public java.util.concurrent.CompletableFuture<org.springframework.kafka.support.SendResult<String, Object>> publish(CreditReply reply) {
+        return kafkaTemplate.send(outboundTopic, reply.transactionId(), reply)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to publish reply for transactionId={}", reply.transactionId(), ex);
