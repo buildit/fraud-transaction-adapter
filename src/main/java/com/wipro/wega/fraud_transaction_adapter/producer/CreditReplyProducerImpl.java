@@ -26,6 +26,10 @@ public class CreditReplyProducerImpl implements CreditReplyProducer {
     @Override
     @Loggable
     public void publish(CreditReply reply) {
-        kafkaTemplate.send(outboundTopic, reply.transactionId(), reply);
+        try {
+            kafkaTemplate.send(outboundTopic, reply.transactionId(), reply).join();
+        } catch (java.util.concurrent.CompletionException e) {
+            throw new RuntimeException("Failed to publish reply to Kafka", e.getCause());
+        }
     }
 }
