@@ -22,6 +22,8 @@ import com.wipro.wega.fraud_transaction_adapter.transformer.CobolTransactionTran
 @Service
 public class CreditTransactionServiceImpl implements CreditTransactionService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class);
+
     private static final String MDC_TRANSACTION_ID = "transactionId";
 
     private final CobolTransactionTransformer transformer;
@@ -72,8 +74,7 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
     private void handleFailure(CreditTransaction transaction, Throwable ex,
                                Map<String, String> journeyContext) {
         withContext(journeyContext, () ->
-                org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
-                        .error("Credit scoring failed for transactionId={}",
+                log.error("Credit scoring failed for transactionId={}",
                                 transaction.transactionId(), ex));
     }
 
