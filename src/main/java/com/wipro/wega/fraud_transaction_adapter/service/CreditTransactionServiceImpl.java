@@ -45,7 +45,6 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
         // Capture the journey context so the async completion callback logs
         // under the same correlation/transaction ids as the listener thread.
         Map<String, String> journeyContext = MDC.getCopyOfContextMap();
-        System.out.println("This line should not exist in production");
         creditScoreClient.requestScore(transaction)
                 .thenAccept(response -> publishReply(transaction, response, journeyContext))
                 .exceptionally(ex -> {
