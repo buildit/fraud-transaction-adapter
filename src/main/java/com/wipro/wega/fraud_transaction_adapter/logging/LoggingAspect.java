@@ -33,6 +33,15 @@ public class LoggingAspect {
         logger.info("ENTRY {}", methodName);
         try {
             Object result = joinPoint.proceed();
+            if (result instanceof java.util.concurrent.CompletableFuture<?> future) {
+                return future.whenComplete((res, ex) -> {
+                    if (ex != null) {
+                        logger.error("ASYNC EXIT {} failed after {} ms: {}", methodName, elapsedMillis(startNanos), ex.getMessage());
+                    } else {
+                        logger.info("ASYNC EXIT {} ({} ms)", methodName, elapsedMillis(startNanos));
+                    }
+                });
+            }
             logger.info("EXIT {} ({} ms)", methodName, elapsedMillis(startNanos));
             return result;
         } catch (Throwable ex) {
