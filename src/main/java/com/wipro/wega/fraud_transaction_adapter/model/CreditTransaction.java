@@ -19,4 +19,20 @@ public record CreditTransaction(
         LocalDate transactionDate,
         LocalTime transactionTime,
         String countryCode) {
+
+    @Override
+    public String toString() {
+        return "CreditTransaction{" +
+                "transactionId='" + transactionId + '\'' +
+                ", accountNumber='" + accountNumber + '\'' +
+                ", cardNumber='***'" +
+                ", amount=" + amount +
+                ", currencyCode='" + currencyCode + '\'' +
+                ", merchantId='" + merchantId + '\'' +
+                ", merchantName='" + merchantName + '\'' +
+                ", transactionDate=" + transactionDate +
+                ", transactionTime=" + transactionTime +
+                ", countryCode='" + countryCode + '\'' +
+                '}';
+    }
 }
