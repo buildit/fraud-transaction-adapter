@@ -27,10 +27,10 @@ public class CreditTransactionConsumer {
 
     @KafkaListener(topics = "${adapter.kafka.inbound-topic}")
     @Loggable
-    public void onMessage(String record) {
+    public java.util.concurrent.CompletableFuture<Void> onMessage(String record) {
         MDC.put(MDC_CORRELATION_ID, UUID.randomUUID().toString());
         try {
-            creditTransactionService.process(record);
+            return creditTransactionService.process(record);
         } finally {
             MDC.clear();
         }
