@@ -38,7 +38,7 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
 
     @Override
     @Loggable
-    public void process(String rawRecord) {
+    public java.util.concurrent.CompletableFuture<Void> process(String rawRecord) {
         CreditTransaction transaction = transformer.transform(rawRecord);
         MDC.put(MDC_TRANSACTION_ID, transaction.transactionId());
 
@@ -46,11 +46,11 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
         // under the same correlation/transaction ids as the listener thread.
         Map<String, String> journeyContext = MDC.getCopyOfContextMap();
 
-        creditScoreClient.requestScore(transaction)
+        return creditScoreClient.requestScore(transaction)
                 .thenAccept(response -> publishReply(transaction, response, journeyContext))
                 .exceptionally(ex -> {
                     handleFailure(transaction, ex, journeyContext);
-                    return null;
+                    throw new RuntimeException("Credit scoring failed", ex);
                 });
     }
 
