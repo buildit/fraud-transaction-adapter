@@ -26,6 +26,11 @@ public class CreditReplyProducerImpl implements CreditReplyProducer {
     @Override
     @Loggable
     public void publish(CreditReply reply) {
-        kafkaTemplate.send(outboundTopic, reply.transactionId(), reply);
+        kafkaTemplate.send(outboundTopic, reply.transactionId(), reply)
+                .exceptionally(ex -> {
+                    org.slf4j.LoggerFactory.getLogger(CreditReplyProducerImpl.class)
+                            .error("Failed to publish reply for transactionId={}", reply.transactionId(), ex);
+                    return null;
+                });
     }
 }

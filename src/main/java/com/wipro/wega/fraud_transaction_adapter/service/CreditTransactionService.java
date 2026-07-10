@@ -10,6 +10,7 @@ public interface CreditTransactionService {
      * Processes one inbound fixed-width credit transaction record.
      *
      * @param rawRecord the COBOL fixed-width message payload
+     * @return a future completing when the processing is finished
      */
-    void process(String rawRecord);
+    java.util.concurrent.CompletableFuture<Void> process(String rawRecord);
 }
