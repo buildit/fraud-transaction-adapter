@@ -11,5 +11,5 @@ public interface CreditTransactionService {
      *
      * @param rawRecord the COBOL fixed-width message payload
      */
-    void process(String rawRecord);
+    java.util.concurrent.CompletableFuture<Void> process(String rawRecord);
 }
