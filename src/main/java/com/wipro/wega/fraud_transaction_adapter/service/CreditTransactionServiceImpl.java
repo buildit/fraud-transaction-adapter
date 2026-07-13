@@ -38,7 +38,7 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
 
     @Override
     @Loggable
-    public void process(String rawRecord) {
+    public java.util.concurrent.CompletableFuture<Void> process(String rawRecord) {
         CreditTransaction transaction = transformer.transform(rawRecord);
         MDC.put(MDC_TRANSACTION_ID, transaction.transactionId());
 
@@ -46,11 +46,11 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
         // under the same correlation/transaction ids as the listener thread.
         Map<String, String> journeyContext = MDC.getCopyOfContextMap();
 
-        creditScoreClient.requestScore(transaction)
+        return creditScoreClient.requestScore(transaction)
                 .thenAccept(response -> publishReply(transaction, response, journeyContext))
                 .exceptionally(ex -> {
                     handleFailure(transaction, ex, journeyContext);
-                    return null;
+                    throw new RuntimeException("Processing failed", ex);
                 });
     }
 
@@ -73,18 +73,25 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
                                Map<String, String> journeyContext) {
         withContext(journeyContext, () ->
                 org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
-                        .error("Credit scoring failed for transactionId={}",
+                        .error("Transaction processing failed for transactionId={}",
                                 transaction.transactionId(), ex));
     }
 
     private void withContext(Map<String, String> context, Runnable action) {
+        Map<String, String> previous = MDC.getCopyOfContextMap();
         if (context != null) {
             MDC.setContextMap(context);
+        } else {
+            MDC.clear();
         }
         try {
             action.run();
         } finally {
-            MDC.clear();
+            if (previous != null) {
+                MDC.setContextMap(previous);
+            } else {
+                MDC.clear();
+            }
         }
     }
 }

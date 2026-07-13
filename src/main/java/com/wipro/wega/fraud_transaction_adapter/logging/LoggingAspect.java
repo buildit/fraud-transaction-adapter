@@ -37,7 +37,7 @@ public class LoggingAspect {
             return result;
         } catch (Throwable ex) {
             logger.error("EXIT {} failed after {} ms: {}", methodName, elapsedMillis(startNanos),
-                    ex.getMessage());
+                    ex.getMessage(), ex);
             throw ex;
         } finally {
             restore(previousMethod);
