@@ -13,7 +13,11 @@ public class RestClientConfig {
 
     @Bean
     RestClient creditScoreRestClient(RestClient.Builder builder, AdapterProperties properties) {
+        org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(5000);
         return builder
+                .requestFactory(factory)
                 .baseUrl(properties.creditScore().baseUrl())
                 .build();
     }
