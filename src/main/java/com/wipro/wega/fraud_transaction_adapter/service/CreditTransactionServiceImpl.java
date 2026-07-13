@@ -73,7 +73,7 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
                                Map<String, String> journeyContext) {
         withContext(journeyContext, () ->
                 org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
-                        .error("Credit scoring failed for transactionId={}",
+                        .error("Transaction processing failed for transactionId={}",
                                 transaction.transactionId(), ex));
     }
 
