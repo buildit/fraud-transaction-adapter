@@ -28,6 +28,8 @@ public class AsyncConfig {
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("credit-score-");
         executor.setTaskDecorator(mdcTaskDecorator());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
         executor.initialize();
         return executor;
     }
