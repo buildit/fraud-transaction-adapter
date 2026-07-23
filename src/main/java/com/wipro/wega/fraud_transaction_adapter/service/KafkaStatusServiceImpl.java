@@ -24,6 +24,9 @@ public class KafkaStatusServiceImpl implements KafkaStatusService {
         try {
             adminClient.describeCluster().nodes().get(3, TimeUnit.SECONDS);
             return "UP";
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            return "DOWN";
         } catch (Exception exception) {
             return "DOWN";
         }
