@@ -39,9 +39,9 @@ public class CobolTransactionTransformer {
 
     @Loggable
     public CreditTransaction transform(String record) {
-        if (record == null || record.length() < RECORD_LENGTH) {
+        if (record == null || record.length() != RECORD_LENGTH) {
             throw new IllegalArgumentException(
-                    "Invalid COBOL record: expected at least " + RECORD_LENGTH
+                    "Invalid COBOL record: expected exactly " + RECORD_LENGTH
                             + " characters but got " + (record == null ? 0 : record.length()));
         }
 
