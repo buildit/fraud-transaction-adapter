@@ -65,6 +65,9 @@ public class CobolTransactionTransformer {
     /** Reads a zoned-numeric amount with two implied decimal places. */
     private BigDecimal amount(String record, int start, int end) {
         String raw = field(record, start, end);
+        if (!raw.matches("^[0-9]+$")) {
+            throw new IllegalArgumentException("Invalid amount format");
+        }
         return new BigDecimal(raw).movePointLeft(2);
     }
 }
