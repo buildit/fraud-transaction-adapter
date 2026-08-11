@@ -58,6 +58,9 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
     private void publishReply(CreditTransaction transaction,
                               CreditScoreResponse response,
                               Map<String, String> journeyContext) {
+        if (response == null) {
+            throw new IllegalStateException("Received null response from credit score service");
+        }
         withContext(journeyContext, () -> {
             CreditReply reply = new CreditReply(
                     response.transactionId(),
