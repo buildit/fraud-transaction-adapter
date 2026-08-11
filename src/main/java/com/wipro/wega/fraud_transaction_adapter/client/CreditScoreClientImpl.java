@@ -2,8 +2,11 @@ package com.wipro.wega.fraud_transaction_adapter.client;
 
 import java.util.concurrent.CompletableFuture;
 
+import jakarta.validation.Valid;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestClient;
 
 import com.wipro.wega.fraud_transaction_adapter.config.AdapterProperties;
@@ -16,6 +19,7 @@ import com.wipro.wega.fraud_transaction_adapter.model.CreditTransaction;
  * Kafka listener thread is never blocked waiting on the downstream service.
  */
 @Component
+@Validated
 public class CreditScoreClientImpl implements CreditScoreClient {
 
     private final RestClient restClient;
@@ -29,7 +33,7 @@ public class CreditScoreClientImpl implements CreditScoreClient {
     @Override
     @Async("creditScoreExecutor")
     @Loggable
-    public CompletableFuture<CreditScoreResponse> requestScore(CreditTransaction transaction) {
+    public CompletableFuture<CreditScoreResponse> requestScore(@Valid CreditTransaction transaction) {
         CreditScoreResponse response = restClient.post()
                 .uri(scorePath)
                 .body(transaction)
