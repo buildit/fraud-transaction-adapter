@@ -40,7 +40,8 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
     @Loggable
     public void process(String rawRecord) {
         CreditTransaction transaction = transformer.transform(rawRecord);
-        MDC.put(MDC_TRANSACTION_ID, transaction.transactionId());
+        String safeTransactionId = transaction.transactionId() != null ? transaction.transactionId().replaceAll("[\\r\\n]", "_") : null;
+        MDC.put(MDC_TRANSACTION_ID, safeTransactionId);
 
         // Capture the journey context so the async completion callback logs
         // under the same correlation/transaction ids as the listener thread.
