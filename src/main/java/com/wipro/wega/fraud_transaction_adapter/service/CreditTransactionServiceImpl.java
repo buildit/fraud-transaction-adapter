@@ -40,7 +40,8 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
     @Loggable
     public void process(String rawRecord) {
         CreditTransaction transaction = transformer.transform(rawRecord);
-        MDC.put(MDC_TRANSACTION_ID, transaction.transactionId());
+        String safeTransactionId = transaction.transactionId() != null ? transaction.transactionId().replaceAll("[\\r\\n]", "_") : null;
+        MDC.put(MDC_TRANSACTION_ID, safeTransactionId);
 
         // Capture the journey context so the async completion callback logs
         // under the same correlation/transaction ids as the listener thread.
@@ -57,6 +58,9 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
     private void publishReply(CreditTransaction transaction,
                               CreditScoreResponse response,
                               Map<String, String> journeyContext) {
+        if (response == null) {
+            throw new IllegalStateException("Received null response from credit score service");
+        }
         withContext(journeyContext, () -> {
             CreditReply reply = new CreditReply(
                     response.transactionId(),
@@ -74,7 +78,7 @@ public class CreditTransactionServiceImpl implements CreditTransactionService {
         withContext(journeyContext, () ->
                 org.slf4j.LoggerFactory.getLogger(CreditTransactionServiceImpl.class)
                         .error("Credit scoring failed for transactionId={}",
-                                transaction.transactionId(), ex));
+                                transaction.transactionId() != null ? transaction.transactionId().replaceAll("[\\r\\n]", "_") : null, ex));
     }
 
     private void withContext(Map<String, String> context, Runnable action) {

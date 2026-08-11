@@ -36,8 +36,9 @@ public class LoggingAspect {
             logger.info("EXIT {} ({} ms)", methodName, elapsedMillis(startNanos));
             return result;
         } catch (Throwable ex) {
+            String safeMessage = ex.getMessage() != null ? ex.getMessage().replace('\n', '_').replace('\r', '_') : null;
             logger.error("EXIT {} failed after {} ms: {}", methodName, elapsedMillis(startNanos),
-                    ex.getMessage());
+                    safeMessage);
             throw ex;
         } finally {
             restore(previousMethod);

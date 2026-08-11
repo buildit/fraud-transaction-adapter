@@ -39,23 +39,27 @@ public class CobolTransactionTransformer {
 
     @Loggable
     public CreditTransaction transform(String record) {
-        if (record == null || record.length() < RECORD_LENGTH) {
+        if (record == null || record.length() != RECORD_LENGTH) {
             throw new IllegalArgumentException(
-                    "Invalid COBOL record: expected at least " + RECORD_LENGTH
+                    "Invalid COBOL record: expected exactly " + RECORD_LENGTH
                             + " characters but got " + (record == null ? 0 : record.length()));
         }
 
-        return new CreditTransaction(
-                field(record, 0, 16),
-                field(record, 16, 28),
-                field(record, 28, 44),
-                amount(record, 44, 56),
-                field(record, 56, 59),
-                field(record, 59, 74),
-                field(record, 74, 99),
-                LocalDate.parse(field(record, 99, 107), DATE_FORMAT),
-                LocalTime.parse(field(record, 107, 113), TIME_FORMAT),
-                field(record, 113, 115));
+        try {
+            return new CreditTransaction(
+                    field(record, 0, 16),
+                    field(record, 16, 28),
+                    field(record, 28, 44),
+                    amount(record, 44, 56),
+                    field(record, 56, 59),
+                    field(record, 59, 74),
+                    field(record, 74, 99),
+                    LocalDate.parse(field(record, 99, 107), DATE_FORMAT),
+                    LocalTime.parse(field(record, 107, 113), TIME_FORMAT),
+                    field(record, 113, 115));
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date or time format in COBOL record", e);
+        }
     }
 
     private String field(String record, int start, int end) {
@@ -65,6 +69,9 @@ public class CobolTransactionTransformer {
     /** Reads a zoned-numeric amount with two implied decimal places. */
     private BigDecimal amount(String record, int start, int end) {
         String raw = field(record, start, end);
+        if (!raw.matches("^[0-9]+$")) {
+            throw new IllegalArgumentException("Invalid amount format");
+        }
         return new BigDecimal(raw).movePointLeft(2);
     }
 }
