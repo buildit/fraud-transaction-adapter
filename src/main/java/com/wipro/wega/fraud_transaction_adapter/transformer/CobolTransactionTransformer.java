@@ -45,17 +45,21 @@ public class CobolTransactionTransformer {
                             + " characters but got " + (record == null ? 0 : record.length()));
         }
 
-        return new CreditTransaction(
-                field(record, 0, 16),
-                field(record, 16, 28),
-                field(record, 28, 44),
-                amount(record, 44, 56),
-                field(record, 56, 59),
-                field(record, 59, 74),
-                field(record, 74, 99),
-                LocalDate.parse(field(record, 99, 107), DATE_FORMAT),
-                LocalTime.parse(field(record, 107, 113), TIME_FORMAT),
-                field(record, 113, 115));
+        try {
+            return new CreditTransaction(
+                    field(record, 0, 16),
+                    field(record, 16, 28),
+                    field(record, 28, 44),
+                    amount(record, 44, 56),
+                    field(record, 56, 59),
+                    field(record, 59, 74),
+                    field(record, 74, 99),
+                    LocalDate.parse(field(record, 99, 107), DATE_FORMAT),
+                    LocalTime.parse(field(record, 107, 113), TIME_FORMAT),
+                    field(record, 113, 115));
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date or time in COBOL record", e);
+        }
     }
 
     private String field(String record, int start, int end) {
